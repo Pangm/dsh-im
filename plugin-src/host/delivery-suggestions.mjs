@@ -89,7 +89,7 @@ function whatsappSuggestion(key) {
 function matrixSuggestion(key) {
   const dm = /^dm:(@[A-Za-z0-9._=\-\/+]+:[A-Za-z0-9.-]+(?::\d{1,5})?)$/.exec(key);
   if (dm) return { kind: 'dm', route: { userId: dm[1] } };
-  const room = /^room:([!#][^:$\s]+:[A-Za-z0-9.-]+(?::\d{1,5})?)(?:\$(\$[^\s]+))?$/u.exec(key);
+  const room = /^room:(![^:$\s]+(?::[A-Za-z0-9.-]+(?::\d{1,5})?)?|#[^:$\s]+:[A-Za-z0-9.-]+(?::\d{1,5})?)(?:\$(\$[^\s]+))?$/u.exec(key);
   if (!room) return null;
   if (room[2] === undefined) return { kind: 'room', route: { roomId: room[1] } };
   return { kind: 'thread', route: { roomId: room[1], threadId: room[2] } };

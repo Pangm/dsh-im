@@ -23,6 +23,12 @@ test('matrix conversation keys yield stable delivery routes in both directions',
     deliverySuggestionFromConversationKey('matrix', 'room:!roomA:example.org$$thread1:example.org'),
     { kind: 'thread', route: { roomId: '!roomA:example.org', threadId: '$thread1:example.org' } },
   );
+  deepStrictEqual(deliverySuggestionFromConversationKey('matrix', 'room:!Rd6H6pogktg1CXDqa3Pbu8TWM2hGwxJsr_IQLkRsJnY'),
+    { kind: 'room', route: { roomId: '!Rd6H6pogktg1CXDqa3Pbu8TWM2hGwxJsr_IQLkRsJnY' } });
+  deepStrictEqual(
+    deliverySuggestionFromConversationKey('matrix', 'room:!Rd6H6pogktg1CXDqa3Pbu8TWM2hGwxJsr_IQLkRsJnY$$thread1'),
+    { kind: 'thread', route: { roomId: '!Rd6H6pogktg1CXDqa3Pbu8TWM2hGwxJsr_IQLkRsJnY', threadId: '$thread1' } },
+  );
   deepStrictEqual(deliverySuggestionFromConversationKey('matrix', 'group:nope'), null);
   deepStrictEqual(deliverySuggestionFromConversationKey('matrix', 'room:not-a-room'), null);
 });

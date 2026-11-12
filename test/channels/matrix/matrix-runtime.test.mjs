@@ -297,6 +297,39 @@ test('an invite whose membership event carries is_direct registers a direct room
     await context.stop();
   }
 });
+test('room version 12 ids without a server part are joined and tracked', async () => {
+  const roomId = '!Rd6H6pogktg1CXDqa3Pbu8TWM2hGwxJsr_IQLkRsJnY';
+  const context = await createContext({
+    apiOptions: {
+      initial: {
+        next_batch: 'b0',
+        rooms: {
+          invite: {
+            [roomId]: {
+              invite_state: { events: [{
+                type: 'm.room.member',
+                sender: '@owner:example.org',
+                state_key: '@bot:example.org',
+                content: { membership: 'invite', is_direct: true },
+              }] },
+            },
+          },
+        },
+      },
+    },
+  });
+  try {
+    await context.runtime.start();
+    await eventually(() => context.fake.calls.some((call) => call.op === 'join' && call.roomId === roomId),
+      'the invite to a room version 12 room is accepted');
+    await eventually(() => context.sidecar.joinedRooms().includes(roomId)
+      && context.sidecar.dmRooms().includes(roomId),
+      'the joined room version 12 room is tracked as a direct chat');
+  } finally {
+    await context.stop();
+  }
+});
+
 test('the DM round trip reaches the harness and streams the answer with typing, preview and reaction', async () => {
   const event = messageEvent();
   const context = await createContext({

@@ -56,9 +56,11 @@ export function isMatrixUserId(value) {
     && /^@[-.=_+/A-Za-z0-9]+:[-.A-Za-z0-9]+(?::\d{1,5})?$/u.test(value);
 }
 
+// Room version 12 (MSC4291) derives the room id from the create event, so it carries no
+// `:server` part (`!<hash>`); older rooms keep `!opaque:server`. Aliases always name a server.
 export function isMatrixRoomId(value) {
   return typeof value === 'string'
-    && /^[!#][^:\s]+:[A-Za-z0-9.-]+(?::\d{1,5})?$/u.test(value);
+    && /^(?:![^:\s]+(?::[A-Za-z0-9.-]+(?::\d{1,5})?)?|#[^:\s]+:[A-Za-z0-9.-]+(?::\d{1,5})?)$/u.test(value);
 }
 
 export function isMatrixEventId(value) {
@@ -293,7 +295,7 @@ export class MatrixApi {
   async joinRoom(roomId, options = {}) {
     if (!isMatrixRoomId(roomId)) throw new TypeError('Matrix room id is invalid');
     return await this.#request('join', {
-      path: `/join/${encodeURIComponent(roomId)}`, method: 'POST', signal: options.signal,
+      path: `/join/${encodeURIComponent(roomId)}`, method: 'POST', body: {}, signal: options.signal,
     });
   }
 

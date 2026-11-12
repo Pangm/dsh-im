@@ -53,6 +53,9 @@ test('address validators accept the protocol forms and reject the rest', () => {
   ok(!isMatrixUserId('bot:example.org') && !isMatrixUserId('@bot@x:y.org'));
   ok(isMatrixRoomId('!abc:example.org') && isMatrixRoomId('#alias:example.org'));
   ok(!isMatrixRoomId('abc:example.org'));
+  // Room version 12 room ids are the create event hash with no server part.
+  ok(isMatrixRoomId('!Rd6H6pogktg1CXDqa3Pbu8TWM2hGwxJsr_IQLkRsJnY'));
+  ok(!isMatrixRoomId('#alias') && !isMatrixRoomId('!') && !isMatrixRoomId('!a b'));
   ok(isMatrixEventId('$abc:example.org') && isMatrixEventId('$abc'));
   ok(!isMatrixEventId('abc'));
   const mediaUrl = mxcToMatrixMediaUrl(HOME, 'mxc://media.example.org/ABCDEF');
@@ -109,6 +112,15 @@ test('rate limits retry exactly once with the reported delay and surface a persi
     jsonResponse({ errcode: 'm.limit_exceeded', error: 'slow down', retry_after_ms: 1 }, 429));
   await rejects(() => stubborn.sendEvent('!room:example.org', 'm.room.message', { body: 'x' }),
     (error) => error.code === 'matrix-rate-limited' && !error.permanent && error.retryAfterMs === 1);
+});
+
+test('joins send a JSON body and accept room version 12 ids', async () => {
+  const roomId = '!Rd6H6pogktg1CXDqa3Pbu8TWM2hGwxJsr_IQLkRsJnY';
+  const { api, calls } = apiWith(() => jsonResponse({ room_id: roomId }));
+  await api.joinRoom(roomId);
+  deepStrictEqual(calls[0].method, 'POST');
+  ok(calls[0].url.endsWith(`/join/${encodeURIComponent(roomId)}`));
+  deepStrictEqual(calls[0].body, '{}', 'homeservers such as Continuwuity reject an empty join body');
 });
 
 test('state reads fold missing rooms to null and member counts count the joined list', async () => {
